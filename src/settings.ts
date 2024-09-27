@@ -25,6 +25,8 @@
  */
 
 import { formattingSettings } from "powerbi-visuals-utils-formattingmodel";
+import {ColorHelper} from "powerbi-visuals-utils-colorutils";
+
 
 import FormattingSettingsCard = formattingSettings.SimpleCard;
 import FormattingSettingsCompositeCard = formattingSettings.CompositeCard;
@@ -35,6 +37,10 @@ import FormattingSettingsGroup = formattingSettings.Group;
 import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColorPalette;
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IEnumMember = powerbi.IEnumMember;
+import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
+import { ForceGraphLink } from "./dataInterfaces";
+import { link } from "d3";
+import powerbiVisualsApi from "powerbi-visuals-api";
 
 export class ForceGraphSettings extends FormattingSettingsModel {
     public animation: AnimationSettings = new AnimationSettings();
@@ -44,6 +50,27 @@ export class ForceGraphSettings extends FormattingSettingsModel {
     public size: SizeSettings = new SizeSettings();
 
     public cards: Array<FormattingSettingsCard> = [this.animation, this.labels, this.links, this.nodes, this.size];
+
+    public populateLinksColor(links: ForceGraphLink[]) {
+        const newSlices: FormattingSettingsSlice[] = [
+            this.links.linkColors.color,
+            this.links.linkColors.showAll
+        ];
+
+
+        links.map((link: ForceGraphLink, i: number) => {
+            newSlices.push(new formattingSettings.ColorPicker({
+                name: `link${i}`,
+                displayName: `link${i}`,
+                selector: link.identity.getSelector(),
+                value: { value: link.color }
+            }));
+        })
+
+        this.links.groups[2].slices = newSlices;
+        console.log(this.links)
+
+    }
 
     public setHighContrastColor(colorPalette: ISandboxExtendedColorPalette): void {
         if (colorPalette.isHighContrast){
@@ -244,13 +271,34 @@ class LinkLabelsGroup extends FormattingSettingsCard {
     slices: FormattingSettingsSlice[] = [this.fontControl, this.color]
 }
 
+export class LinkColorsGroup extends FormattingSettingsCard {
+    public defaultLinkColor: string = "#000000";
+
+    public color = new formattingSettings.ColorPicker({
+        name: "color",
+        displayNameKey: "Visual_DefaultColor",
+        value: { value: this.defaultLinkColor }
+    });
+
+    public showAll = new formattingSettings.ToggleSwitch({
+        name: "showAll",
+        displayNameKey: "Visual_ShowAll",
+        value: false
+    });
+
+    public name: string = "color";
+    public displayNameKey: string = "Visual_Color";
+    slices: FormattingSettingsSlice[] = [this.color, this.showAll]
+}
+
 class LinksSettings extends FormattingSettingsCompositeCard {
     public linkOptions: LinkOptionsGroup = new LinkOptionsGroup();
     public linkLabels: LinkLabelsGroup = new LinkLabelsGroup();
+    public linkColors: LinkColorsGroup = new LinkColorsGroup();
 
     public name: string = "links";
     public displayNameKey: string = "Visual_ForceGraph_Links";
-    groups: FormattingSettingsGroup[] = [this.linkOptions, this.linkLabels];
+    groups: FormattingSettingsGroup[] = [this.linkOptions, this.linkLabels, this.linkColors];
 }
 
 class NodeImageSettingsGroup extends FormattingSettingsCard {

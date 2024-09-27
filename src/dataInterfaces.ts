@@ -69,6 +69,8 @@ export interface ForceGraphLink extends TooltipEnabledDataPoint {
     formattedWeight: string;
     linkType: string;
     selected: boolean;
+    identity: ISelectionId;
+    color: string;
 }
 
 export interface ForceGraphData {

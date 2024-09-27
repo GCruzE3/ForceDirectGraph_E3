@@ -190,6 +190,11 @@
                         "bool": true
                     }
                 },
+                "showAll": {
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "showLabel": {
                     "type": {
                         "bool": true

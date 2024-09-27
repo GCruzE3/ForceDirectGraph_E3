@@ -88,6 +88,8 @@ import DataViewValueColumn = powerbi.DataViewValueColumn;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import DataViewObjectPropertyIdentifier = powerbi.DataViewObjectPropertyIdentifier;
+import ISelectionIdBuilder = powerbi.visuals.ISelectionIdBuilder;
 
 import { pixelConverter as PixelConverter } from "powerbi-visuals-utils-typeutils";
 import * as SVGUtil from "powerbi-visuals-utils-svgutils";
@@ -162,6 +164,11 @@ export class ForceGraph implements IVisual {
     private static LinkLabelSelector: ClassAndSelector = createClassAndSelector("linklabel");
     private static NodeSelector: ClassAndSelector = createClassAndSelector("node");
     private static NoAnimationLimit: number = 200;
+
+    private static LinkColorPropertyIdentifier: DataViewObjectPropertyIdentifier = {
+        objectName: "links",
+        propertyName: "fill"
+    };
 
     private telemetry: ExternalLinksTelemetry;
 
@@ -323,6 +330,7 @@ export class ForceGraph implements IVisual {
         const metadata: ForceGraphColumns<DataViewMetadataColumn> = ForceGraphColumns.getMetadataColumns(dataView);
         const nodes: ForceGraphNodes = {};
 
+
         let minFiles: number = Number.MAX_VALUE;
         let maxFiles: number = 0;
 
@@ -380,6 +388,7 @@ export class ForceGraph implements IVisual {
         const targetFormatter: IValueFormatter = valueFormatter.create({
             format: valueFormatter.getFormatStringByColumn(metadata.Target, true),
         });
+
 
         for (let i = 0; i < targetCategories.length; i++) {
             const source = sourceCategories[i];
@@ -439,6 +448,16 @@ export class ForceGraph implements IVisual {
                 dataView.metadata.columns
             );
 
+            let linkColor = settings.links.linkColors.color.value.value; // Colore di default
+
+
+            if (settings.links.linkColors.showAll) {
+                // Se l'utente ha scelto un colore personalizzato, usa quello
+                console.log(settings.links.linkColors.slices[i])
+                // linkColor = settings.links.linkColors.slices[i] || linkColor;
+            }
+            
+
             const link: ForceGraphLink = {
                 source: sourceNode,
                 target: targetNode,
@@ -449,7 +468,10 @@ export class ForceGraph implements IVisual {
                 formattedWeight: weight && weightFormatter.format(weight),
                 linkType: linkType || ForceGraph.DefaultLinkType,
                 tooltipInfo: tooltipInfo,
-                selected: false
+                selected: false,
+                identity: host.createSelectionIdBuilder()
+                .createSelectionId(),
+                color: linkColor
             };
 
             if (metadata.LinkType && !linkDataPoints[linkType]) {
@@ -462,6 +484,9 @@ export class ForceGraph implements IVisual {
                     color,
                     label: linkType,
                 };
+
+                console.log(linkDataPoints)
+
             }
 
             if (link.weight < minFiles) {
@@ -590,9 +615,34 @@ export class ForceGraph implements IVisual {
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {
+        this.filterSettingsCards();
         this.settings.setLocalizedOptions(this.localizationManager);
         const model = this.formattingSettingsService.buildFormattingModel(this.settings);
         return model;
+    }
+
+    public filterSettingsCards() {
+        const settings: ForceGraphSettings = this.settings;
+
+        settings.cards.forEach(element => {
+            switch(element.name) {
+                case ForceGraph.LinkColorPropertyIdentifier.objectName: {
+                    if (this.data && this.data.links.length === 0) {
+                        return;
+                    }
+
+                    // const dataPoints: ForceGraphLink[] = this.data && this.data.links;
+                    // if (!dataPoints || !dataPoints.length) {
+                    //     settings.milestonesCardSettings.visible = false;
+                    //     return;
+                    // }
+
+
+                    settings.populateLinksColor(this.data.links);
+                    break;
+                }
+            }
+        });
     }
 
     private render(): void {
@@ -622,8 +672,8 @@ export class ForceGraph implements IVisual {
                     : ForceGraph.DefaultLinkThickness;
             })
             .classed(ForceGraph.LinkSelector.className, true)
-            .style("stroke", (link: ForceGraphLink) => {
-                return this.getLinkColor(link, this.colorPalette, this.colorHelper);
+            .style("stroke", (link: ForceGraphLink, i: number) => {
+                return link.color || "#000000"
             })
             .style("fill", (link: ForceGraphLink) => {
                 if (settings.links.linkOptions.showArrow.value && link.source !== link.target) {
