@@ -25,12 +25,14 @@
       "fileMatch": [
         "/pbiviz.json"
       ],
+            //"url": "./.api/v2.1.0/schema.pbiviz.json" //versione git, branch originale
       "url": "./node_modules/powerbi-visuals-api/schema.pbiviz.json"
     },
     {
       "fileMatch": [
         "/capabilities.json"
       ],
+            //"url": "./.api/v2.1.0/schema.capabilities.json" //versione git, branch originale
       "url": "./node_modules/powerbi-visuals-api/schema.capabilities.json"
     }
   ]
