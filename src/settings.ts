@@ -36,6 +36,9 @@ import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColo
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IEnumMember = powerbi.IEnumMember;
 
+import{ ForceGraphData, ForceGraphLink, ForceGraphNode} from "./dataInterfaces"
+import { ForceGraph } from "./visual";
+
 export class ForceGraphSettings extends FormattingSettingsModel {
     public animation: AnimationSettings = new AnimationSettings();
     public labels: LabelsSettings = new LabelsSettings();
@@ -62,6 +65,19 @@ export class ForceGraphSettings extends FormattingSettingsModel {
         options.forEach(option => {
             option.displayName = localizationManager.getDisplayName(option.key);
         });
+    }
+
+    //NOTE: metodo da implementare
+    public setNodeColor(data: ForceGraphData){
+        let m = Object.create(data.nodes);
+        let arrayNode: ForceGraphNode[] = []
+        
+        for (let i = 0; i < Object.keys(data.nodes).length; i++) {
+            arrayNode.push(data.nodes[i]);
+        }
+        
+        console.log("setWIP(arrayNode: )")
+        console.log(arrayNode)
     }
 }
 
@@ -159,13 +175,13 @@ interface IEnumMemberWithDisplayNameKey extends IEnumMember{
 }
 
 export enum LinkColorType {
-    ByWeight = "By Weight",
+    ByWeight = "By Link Weight",
     ByLinkType = "By Link Type",
     Interactive = "Interactive"
 }
 
 const colorLinkOptions : IEnumMemberWithDisplayNameKey[] = [
-    {value : LinkColorType.ByWeight, displayName : "By Weight", key: "Visual_ForceGraph_ByWeight"}, 
+    {value : LinkColorType.ByWeight, displayName : "By Link Weight", key: "Visual_ForceGraph_ByLinkWeight"}, 
     {value : LinkColorType.ByLinkType, displayName : "By Link Type", key: "Visual_ForceGraph_ByLinkType"},
     {value : LinkColorType.Interactive, displayName : "Interactive", key: "Visual_Interactive"}, 
 ];
@@ -252,7 +268,9 @@ class LinksSettings extends FormattingSettingsCompositeCard {
     public displayNameKey: string = "Visual_ForceGraph_Links";
     groups: FormattingSettingsGroup[] = [this.linkOptions, this.linkLabels];
 }
+//#endregion
 
+//#region NODE
 class NodeImageSettingsGroup extends FormattingSettingsCard {
     public defaultImageUrlPlaceholder: string = "Url";
     public defaultImageValuePlaceholder: string = "Image name";
@@ -334,6 +352,9 @@ class NodesSettings extends FormattingSettingsCompositeCard {
     groups: FormattingSettingsGroup[] = [this.optionGroup, this.imageGroup];
 }
 
+//#endregion
+
+//#region SIZE
 class SizeSettings extends FormattingSettingsCard{
     public defaultCharge: number = -15;
 
@@ -362,3 +383,4 @@ class SizeSettings extends FormattingSettingsCard{
     public displayNameKey: string = "Visual_Size";
     slices: FormattingSettingsSlice[] = [this.charge, this.boundedByBox];
 }
+//#endregion

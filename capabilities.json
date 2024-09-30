@@ -3,7 +3,9 @@
         {
             "name": "WebAccess",
             "essential": true,
-            "parameters": ["https://*"]
+            "parameters": [
+                "https://*"
+            ]
         }
     ],
     "dataRoles": [
@@ -20,10 +22,10 @@
             "displayName": "Target"
         },
         {
-            "displayNameKey": "Visual_Weight",
-            "name": "Weight",
+            "displayNameKey": "Visual_LinkWeight",
+            "name": "LinkWeight",
             "kind": "Measure",
-            "displayName": "Weight"
+            "displayName": "Link Weight"
         },
         {
             "displayNameKey": "Visual_LinkType",
@@ -60,7 +62,7 @@
                     "Target": {
                         "max": 1
                     },
-                    "Weight": {
+                    "LinkWeight": {
                         "max": 1
                     },
                     "LinkType": {
@@ -110,12 +112,12 @@
                     }
                 },
                 "values": {
-                    "select": [
-                        {
-                            "bind": {
-                                "to": "Weight"
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "LinkWeight"
+                                }
                             }
-                        }
                     ]
                 }
             }

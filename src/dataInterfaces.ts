@@ -65,7 +65,7 @@ export interface ForceGraphNodes {
 export interface ForceGraphLink extends TooltipEnabledDataPoint {
     source: ForceGraphNode;
     target: ForceGraphNode;
-    weight: number;
+    linkWeight: number;
     formattedWeight: string;
     linkType: string;
     selected: boolean;

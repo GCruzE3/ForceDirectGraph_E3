@@ -298,7 +298,7 @@ export class ForceGraph implements IVisual {
         switch (this.settings.links.linkOptions.colorLink.value.value) {
             case LinkColorType.ByWeight: {
                 return colorPalette
-                    .getColor(this.scale1to10(link.weight).toString())
+                    .getColor(this.scale1to10(link.linkWeight).toString())
                     .value;
             }
             case LinkColorType.ByLinkType: {
@@ -355,21 +355,21 @@ export class ForceGraph implements IVisual {
             sourceTypeCategories: any[] = (categorical.SourceType || { values: [] }).values,
             targetTypeCategories: any[] = (categorical.TargetType || { values: [] }).values,
             linkTypeCategories: any[] = (categorical.LinkType || { values: [] }).values,
-            weightValues: any[] = (categorical.Weight && categorical.Weight[0] || { values: [] }).values;
+            linkWeightValues: any[] = (categorical.LinkWeight && categorical.LinkWeight[0] || { values: [] }).values;
 
         let weightFormatter: IValueFormatter = null;
 
-        if (metadata.Weight) {
-            let weightValue: number = +settings.links.linkOptions.displayUnits.value;
+        if (metadata.LinkWeight) {
+            let linkWeightValue: number = +settings.links.linkOptions.displayUnits.value;
 
-            if (!weightValue && categorical.Weight && categorical.Weight.length) {
-                weightValue = categorical.Weight[0].maxLocal as number;
+            if (!linkWeightValue && categorical.LinkWeight && categorical.LinkWeight.length) {
+                linkWeightValue = categorical.LinkWeight[0].maxLocal as number;
             }
 
             weightFormatter = valueFormatter.create({
-                format: valueFormatter.getFormatStringByColumn(metadata.Weight, true),
+                format: valueFormatter.getFormatStringByColumn(metadata.LinkWeight, true),
                 precision: settings.links.linkOptions.decimalPlaces.value,
-                value: weightValue
+                value: linkWeightValue
             });
         }
 
@@ -387,7 +387,7 @@ export class ForceGraph implements IVisual {
             const targetType = targetTypeCategories[i];
             const sourceType = sourceTypeCategories[i];
             const linkType = linkTypeCategories[i];
-            const weight = weightValues[i];
+            const linkWeight = linkWeightValues[i];
 
             linkedByName[`${source},${target}`] = ForceGraph.DefaultValueOfExistingLink;
 
@@ -431,7 +431,7 @@ export class ForceGraph implements IVisual {
                 {
                     Source: source,
                     Target: target,
-                    Weight: weightFormatter ? weightFormatter.format(weight) : weight,
+                    LinkWeight: weightFormatter ? weightFormatter.format(linkWeight) : linkWeight,
                     LinkType: linkType,
                     SourceType: sourceType,
                     TargetType: targetType
@@ -442,11 +442,11 @@ export class ForceGraph implements IVisual {
             const link: ForceGraphLink = {
                 source: sourceNode,
                 target: targetNode,
-                weight: Math.max(metadata.Weight
-                    ? (weight || ForceGraph.MinWeight)
+                linkWeight: Math.max(metadata.LinkWeight
+                    ? (linkWeight || ForceGraph.MinWeight)
                     : ForceGraph.MaxWeight,
                     ForceGraph.MinWeight),
-                formattedWeight: weight && weightFormatter.format(weight),
+                formattedWeight: linkWeight && weightFormatter.format(linkWeight),
                 linkType: linkType || ForceGraph.DefaultLinkType,
                 tooltipInfo: tooltipInfo,
                 selected: false
@@ -464,17 +464,18 @@ export class ForceGraph implements IVisual {
                 };
             }
 
-            if (link.weight < minFiles) {
-                minFiles = link.weight;
+            if (link.linkWeight < minFiles) {
+                minFiles = link.linkWeight;
             }
 
-            if (link.weight > maxFiles) {
-                maxFiles = link.weight;
+            if (link.linkWeight > maxFiles) {
+                maxFiles = link.linkWeight;
             }
 
             links.push(link);
         }
 
+        //TODO: farsì che il nodo prenda la size, ovvero weight a seconda del campo passato e non dai collegamenti
         // calculate nodes weight based on number of links
         for (const node of Object.values(nodes)) {
             node.weight = Object.values(node.adj).reduce((partialSum, a) => partialSum + a, 0);
@@ -618,7 +619,7 @@ export class ForceGraph implements IVisual {
             .attr("id", (d, i) => "linkid_" + i)
             .attr("stroke-width", (link: ForceGraphLink) => {
                 return settings.links.linkOptions.thickenLink.value
-                    ? this.scale1to10(link.weight)
+                    ? this.scale1to10(link.linkWeight)
                     : ForceGraph.DefaultLinkThickness;
             })
             .classed(ForceGraph.LinkSelector.className, true)
@@ -668,7 +669,7 @@ export class ForceGraph implements IVisual {
             .classed(ForceGraph.LinkLabelSelector.className, true)
             .attr("dy", (link: ForceGraphLink) => {
                 return settings.links.linkOptions.thickenLink.value
-                    ? -this.scale1to10(link.weight) + this.defaultYOffset
+                    ? -this.scale1to10(link.linkWeight) + this.defaultYOffset
                     : this.defaultYPosition;
             })
             .attr("text-anchor", ForceGraph.LinkTextAnchor)
