@@ -38,11 +38,10 @@ import ISandboxExtendedColorPalette = powerbi.extensibility.ISandboxExtendedColo
 import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import IEnumMember = powerbi.IEnumMember;
 import ISelectionId = powerbiVisualsApi.visuals.ISelectionId;
-import { ForceGraphLink } from "./dataInterfaces";
 import { link } from "d3";
 import powerbiVisualsApi from "powerbi-visuals-api";
 
-import{ ForceGraphData, ForceGraphLink, ForceGraphNode} from "./dataInterfaces"
+import{ ForceGraphData, ForceGraphLink, ForceGraphNode, ForceGraphNodes} from "./dataInterfaces"
 import { ForceGraph } from "./visual";
 
 export class ForceGraphSettings extends FormattingSettingsModel {
@@ -71,7 +70,29 @@ export class ForceGraphSettings extends FormattingSettingsModel {
         })
 
         this.links.groups[2].slices = newSlices;
-        console.log(this.links)
+
+    }
+
+
+    public populateNodesColor(nodes: ForceGraphNodes) {
+        const newSlices: FormattingSettingsSlice[] = [
+            this.nodes.optionGroup.fillColor,
+            this.nodes.optionGroup.strokeColor,
+            this.nodes.optionGroup.nameMaxLength
+        ];
+
+        for (const node of Object.values(nodes)) {
+            newSlices.push(new formattingSettings.ColorPicker({
+                name: `${node.name}`,
+                displayName: `${node.name}`,
+                selector: node.identity.getSelector(),
+                value: { value: node.color }
+            }));
+        }
+
+        console.log(newSlices)
+
+        this.nodes.groups[0].slices = newSlices;
 
     }
 
@@ -103,8 +124,7 @@ export class ForceGraphSettings extends FormattingSettingsModel {
             arrayNode.push(data.nodes[i]);
         }
         
-        console.log("setWIP(arrayNode: )")
-        console.log(arrayNode)
+
     }
 }
 

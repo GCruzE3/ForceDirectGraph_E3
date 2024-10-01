@@ -49,6 +49,7 @@ export interface ForceGraphNode extends Node {
     hideLabel?: boolean;
     identity: ISelectionId;
     weight?: number;
+    color?: string;
 }
 
 export interface ITextRect {

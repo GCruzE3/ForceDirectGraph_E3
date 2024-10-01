@@ -453,7 +453,6 @@ export class ForceGraph implements IVisual {
 
             if (settings.links.linkColors.showAll) {
                 // Se l'utente ha scelto un colore personalizzato, usa quello
-                console.log(settings.links.linkColors.slices[i])
                 // linkColor = settings.links.linkColors.slices[i] || linkColor;
             }
             
@@ -485,7 +484,6 @@ export class ForceGraph implements IVisual {
                     label: linkType,
                 };
 
-                console.log(linkDataPoints)
 
             }
 
@@ -504,6 +502,7 @@ export class ForceGraph implements IVisual {
         // calculate nodes weight based on number of links
         for (const node of Object.values(nodes)) {
             node.weight = Object.values(node.adj).reduce((partialSum, a) => partialSum + a, 0);
+            node.color = "#000000"
         }
 
         return {
@@ -618,6 +617,7 @@ export class ForceGraph implements IVisual {
     public getFormattingModel(): powerbi.visuals.FormattingModel {
         this.filterSettingsCards();
         this.settings.setLocalizedOptions(this.localizationManager);
+        console.log(this.settings)
         const model = this.formattingSettingsService.buildFormattingModel(this.settings);
         return model;
     }
@@ -642,11 +642,27 @@ export class ForceGraph implements IVisual {
                     settings.populateLinksColor(this.data.links);
                     break;
                 }
+                case "nodes": {
+                    if (this.data && this.data.links.length === 0) {
+                        return;
+                    }
+
+                    // const dataPoints: ForceGraphLink[] = this.data && this.data.links;
+                    // if (!dataPoints || !dataPoints.length) {
+                    //     settings.milestonesCardSettings.visible = false;
+                    //     return;
+                    // }
+
+
+                    settings.populateNodesColor(this.data.nodes);
+                    break;
+                }
             }
         });
     }
 
     private render(): void {
+        console.log(this.settings)
         this.renderLinks(this.settings);
         this.renderLinkLabels(this.settings);
         this.renderNodes(this.settings);
@@ -836,7 +852,9 @@ export class ForceGraph implements IVisual {
                         ? ForceGraph.MinNodeWeight
                         : node.weight;
                 })
-                .style("fill", settings.nodes.optionGroup.fillColor.value.value)
+                .style("fill",(node: ForceGraphNode) => {
+                    return node.color
+                })
                 .style("stroke", settings.nodes.optionGroup.strokeColor.value.value)
                 .style("outline", `solid 0px ${this.colorHelper.getHighContrastColor("foreground", "black")}`)
                 .style("border-radius", (node: ForceGraphNode) => {
